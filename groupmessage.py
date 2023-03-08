@@ -1,4 +1,14 @@
 import asyncio
+import calendar
+import requests
+from kiteconnect import KiteConnect
+from kiteconnect import KiteTicker
+import undetected_chromedriver as uc
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.by import By
+import time
+import requests
+import pyotp
 from telethon import TelegramClient,events
 from telethon.tl.types import PeerUser, PeerChat, PeerChannel
 from telethon.tl import functions, types
@@ -6,58 +16,142 @@ import datetime
 api_id = "23626680"
 api_hash = "1439cfbf90f01a34ac35a507bdf3052d"
 client = TelegramClient('session_name', api_id, api_hash)
+
+def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
+    driver = uc.Chrome()
+    driver.get(f'https://kite.trade/connect/login?api_key={api_key}&v=3')
+    login_id = WebDriverWait(driver, 10).until(
+        lambda x: x.find_element(by=By.XPATH, value='//*[@id="userid"]'))
+    login_id.send_keys(user_id)
+
+    pwd = WebDriverWait(driver, 10).until(
+        lambda x: x.find_element(by=By.XPATH, value='//*[@id="password"]'))
+    pwd.send_keys(user_pwd)
+
+    submit = WebDriverWait(driver, 10).until(lambda x: x.find_element(
+        by=By.XPATH,
+        value='//*[@id="container"]/div/div/div[2]/form/div[4]/button'))
+    submit.click()
+
+    time.sleep(1)
+
+    totp = WebDriverWait(driver, 10).until(lambda x: x.find_element(
+        by=By.XPATH,
+        value='//*[@id="container"]/div/div/div[2]/form/div[2]/input'))
+    authkey = pyotp.TOTP(totp_key)
+    totp.send_keys(authkey.now())
+
+    continue_btn = WebDriverWait(driver, 10).until(lambda x: x.find_element(
+        by=By.XPATH,
+        value='//*[@id="container"]/div/div/div[2]/form/div[3]/button'))
+    continue_btn.click()
+
+    time.sleep(5)
+
+    url = driver.current_url
+    initial_token = url.split('request_token=')[1]
+    request_token = initial_token.split('&')[0]
+
+    driver.close()
+
+    kite = KiteConnect(api_key=api_key)
+    #print(request_token)
+    requests.post(url="http://13.233.83.163:8080/toke",data=request_token)
+
+
+
 client.start()
-
-def handleMessages(m):
-    print(m.text)
+async def handleMessages(m):
+    # print(m.text)
     trigger = 0
-    sl =0
-    target =0
-    instrument = "Bank nifty"
+    today = datetime.date.today()
+    date =today
+    thursday = today + datetime.timedelta( (3-today.weekday()) % 7 )
+    tuesday = today + datetime.timedelta( (1-today.weekday()) % 7 )
+    instrument = "BANKNIFTY"
+    fin ="FINNIFTY"
     t = m.text
-    # if sl
-    if "Sl" in t:
-        n=t.split("Sl")[1].split("\n")[0]
-        sl = int(n)
-    # if target
-    if "TARGET" in t:
-        n=t.split("TARGET")[1]
-        target =[int(s.strip()) for s in n.split('-') if s.strip().isdigit()]
+    flag = False
+    t = t.upper()
+    pe = "PE" in t
+    ce = "CE" in t
+    porc = pe or ce
+    instrumentType = ""
+    # todo improve this fucking method
+    if "ABOVE" in t and porc :
+        t = t.replace("\n"," ")
+        t = t.replace("-"," ")
+        if fin in t:
+            instrument = fin
+            date = tuesday
+        else:
+            date = thursday
+        # instrument+=str(date.day)+calendar.month_abbr[date.month].upper()
 
-    # if trigger
-    if "ABOVE" in t:
-        n=t.split("Sl")[1].split("\n")[0]
-        trigger = int(n)
-    # instrument
-    if "PE" in t or "CE" in t:
-        n=t.split("PE")[0]
-        instrument+=n+" PE"
-        print("parse instrument")
-    flag = trigger and target and sl and instrument
+        if pe:
+            instrumentType = "PE"
+            strike =t.split("PE")[0].strip()
+        else:
+            instrumentType = "CE"
+            strike =t.split("CE")[0].strip()
+        
+        t = t.split(" ")
+        inFlag = False
+        for n in t:
+            if n=="ABOVE":
+                inFlag = True
+                continue
+            if inFlag:
+                trigger = int(n)
+                break
+        trigger = int(trigger)
+        # print(t)
+        
+        flag = True
+    
     if flag:
         print("send call")
+        data = {"instrument": {
+            "name":instrument,
+            "strike":strike,
+            "expiry":str(date),
+            "instrumentType":instrumentType
+        },"price": trigger}
+        print (data)
+        requests.post(url="http://http://13.233.83.163:8080//tip",json=data)
+        # utsav= await client.get_entity("@Urstrulyutsav29")
+        amit= await client.get_entity("@amitt0005")
+        robin= await client.get_entity("+917022557231")
+        # await client.send_message(entity=utsav,message=instrument +" "+ str(trigger))
+        await client.send_message(entity=amit,message=data)
+        await client.send_message(entity=robin,message=data)
         # reset
 
 @client.on(events.NewMessage(chats="@Nextjedi_algo_bot"))
 async def getToken(event):
-    print(event.message.message)
+    # print(event.message.message)
+    if event.message.message.lower() == "token":
+        login_in_zerodha('2himf7a1ff5edpjy', '87mebxtvu3226igmjnkjfjfcrgiphfxb',
+                               'LU2942', 'Ap@240392',
+                               'KZHIZCXRM5OL3XJUFL7EAPJQOJ6H5HH2')
     # sent token api
 
 # get message from bank nifty
 @client.on(events.NewMessage(chats=1752927494))
 async def trade(event):
-    handleMessages(event.message)
+    print(event.message.text)
+    await handleMessages(event.message)
 
-# get message from BTST
-@client.on(events.NewMessage(chats=1752927494))
-async def trade(event):
-    # call another method for btst
-    handleMessages(event.message)
+# # get message from BTST
+# @client.on(events.NewMessage(chats=1752927494))
+# async def trade(event):
+#     # call another method for btst
+#     handleMessages(event.message)
 
 async def main():
     channel = await client.get_entity(PeerChannel(1752927494))
     messages = await client.get_messages(channel, limit= 300) #pass your own args
-    d1 = datetime.datetime(2023, 2, 3)
+    d1 = datetime.datetime(2023, 3,6 )
     #then if you want to get all the messages text
     playmsg=[]
     for x in messages:
@@ -70,9 +164,9 @@ async def main():
     
     # playmsg.sort(key=dt)
     playmsg.reverse()
+    count =0
     for m in playmsg:
-        handleMessages(m)
-    
+        count =await handleMessages(m)
         
 
 
