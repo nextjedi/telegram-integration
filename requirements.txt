@@ -2,3 +2,4 @@ kiteconnect
 undetected_chromedriver
 pyotp
 selenium
+telethon
