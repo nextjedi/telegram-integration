@@ -39,14 +39,14 @@ def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
 
     totp = WebDriverWait(driver, 10).until(lambda x: x.find_element(
         by=By.XPATH,
-        value='//*[@id="container"]/div/div/div[2]/form/div[2]/input'))
+        value='/html/body/div[1]/div/div[2]/div[1]/div[2]/div/div[2]/form/div[1]/input'))
     authkey = pyotp.TOTP(totp_key)
     totp.send_keys(authkey.now())
 
-    continue_btn = WebDriverWait(driver, 10).until(lambda x: x.find_element(
-        by=By.XPATH,
-        value='//*[@id="container"]/div/div/div[2]/form/div[3]/button'))
-    continue_btn.click()
+    # continue_btn = WebDriverWait(driver, 10).until(lambda x: x.find_element(
+    #     by=By.XPATH,
+    #     value='//*[@id="container"]/div/div/div[2]/form/div[3]/button'))
+    # continue_btn.click()
 
     time.sleep(5)
 
@@ -58,7 +58,8 @@ def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
     print("logged in successfully going to call api")
     kite = KiteConnect(api_key=api_key)
     #print(request_token)
-    requests.post(url=ip+"toke",data=request_token)
+    res =requests.post(url=ip+"toke",data=request_token)
+    print(res.status_code)
 
 
 
