@@ -15,12 +15,14 @@ from telethon.tl import functions, types
 import datetime
 api_id = "23626680"
 api_hash = "1439cfbf90f01a34ac35a507bdf3052d"
+ip = "http://13.233.83.163:8080/"
 client = TelegramClient('session_name', api_id, api_hash)
 ipport = "http://localhost:8080"
 # ipport = "http://13.233.83.163:8080/"
 
 def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
     driver = uc.Chrome
+    print("going to login")
     driver.get(f'https://kite.trade/connect/login?api_key={api_key}&v=3')
     login_id = WebDriverWait(driver, 10).until(
         lambda x: x.find_element(by=By.XPATH, value='//*[@id="userid"]'))
@@ -39,14 +41,14 @@ def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
 
     totp = WebDriverWait(driver, 10).until(lambda x: x.find_element(
         by=By.XPATH,
-        value='//*[@id="container"]/div/div/div[2]/form/div[2]/input'))
+        value='/html/body/div[1]/div/div[2]/div[1]/div[2]/div/div[2]/form/div[1]/input'))
     authkey = pyotp.TOTP(totp_key)
     totp.send_keys(authkey.now())
 
-    continue_btn = WebDriverWait(driver, 10).until(lambda x: x.find_element(
-        by=By.XPATH,
-        value='//*[@id="container"]/div/div/div[2]/form/div[3]/button'))
-    continue_btn.click()
+    # continue_btn = WebDriverWait(driver, 10).until(lambda x: x.find_element(
+    #     by=By.XPATH,
+    #     value='//*[@id="container"]/div/div/div[2]/form/div[3]/button'))
+    # continue_btn.click()
 
     time.sleep(5)
 
@@ -55,9 +57,11 @@ def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
     request_token = initial_token.split('&')[0]
 
     driver.close()
-
+    print("logged in successfully going to call api")
     kite = KiteConnect(api_key=api_key)
     #print(request_token)
+    res =requests.post(url=ip+"toke",data=request_token)
+    print(res.status_code)
     requests.post(url=ipport+"/toke",data=request_token)
 
 
@@ -121,6 +125,7 @@ async def handleMessages(m):
         },"price": trigger}
         print (data)
         requests.post(url=ipport+"/tip",json=data)
+        requests.post(url=ip+"tip",json=data)
         # utsav= await client.get_entity("@Urstrulyutsav29")
         # amit= await client.get_entity("@amitt0005")
         # robin= await client.get_entity("+917022557231")
@@ -131,6 +136,7 @@ async def handleMessages(m):
 
 @client.on(events.NewMessage(chats="@Nextjedi_algo_bot"))
 async def getToken(event):
+    print(event.message.message)
     print(event.message.message)
     if event.message.message.lower() == "token":
         login_in_zerodha('2himf7a1ff5edpjy', '87mebxtvu3226igmjnkjfjfcrgiphfxb',
@@ -153,7 +159,7 @@ async def trade(event):
 async def main():
     channel = await client.get_entity(PeerChannel(1752927494))
     messages = await client.get_messages(channel, limit= 300) #pass your own args
-    d1 = datetime.datetime(2023, 3,6 )
+    d1 = datetime.datetime(2023, 3,13 )
     #then if you want to get all the messages text
     playmsg=[]
     for x in messages:
@@ -170,7 +176,6 @@ async def main():
     for m in playmsg:
         count =await handleMessages(m)
         
-
 
 # loop = asyncio.get_event_loop()
 # loop.run_until_complete(main())
