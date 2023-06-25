@@ -21,7 +21,7 @@ ipport = "http://localhost:8080"
 # ipport = "http://13.233.83.163:8080/"
 
 def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
-    driver = uc.Chrome
+    driver = uc.Chrome()
     print("going to login")
     driver.get(f'https://kite.trade/connect/login?api_key={api_key}&v=3')
     login_id = WebDriverWait(driver, 10).until(
