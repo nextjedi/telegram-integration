@@ -25,8 +25,8 @@ steps:
     versionSpec: $(pythonVersion)
 
 # Install some tools needed for build (pylint, flake8, etc)
-- bash: pip install -r requirements.txt -U --upgrade-strategy eager
-  displayName: Install packages for build
+# - bash: pip install -r requirements.txt -U --upgrade-strategy eager
+#   displayName: Install packages for build
 
 # Lint via pylint. We need to find all .py files under src/simple_package and run pylint to avoid errors
 # - bash: find $(srcDirectory) $(testsDirectory) -type f -name "*.py" | xargs pylint
