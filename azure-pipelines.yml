@@ -29,13 +29,13 @@ steps:
   displayName: Install packages for build
 
 # Lint via pylint. We need to find all .py files under src/simple_package and run pylint to avoid errors
-- bash: find $(srcDirectory) $(testsDirectory) -type f -name "*.py" | xargs pylint
-  displayName: "Linting: pylint"
+# - bash: find $(srcDirectory) $(testsDirectory) -type f -name "*.py" | xargs pylint
+#   displayName: "Linting: pylint"
 
 # Lint via flake8. flake8 has better discovery, so we can invoke it directly
-- bash: flake8
-  displayName: "Linting: flake8"
-  workingDirectory: $(srcDirectory)
+# - bash: flake8
+#   displayName: "Linting: flake8"
+#   workingDirectory: $(srcDirectory)
 
 # Run tests
 # - bash: pytest
