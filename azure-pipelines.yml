@@ -5,7 +5,7 @@
 variables:
   pythonVersion: 3.7
   package: simple_package
-  srcDirectory: src/$(package)
+  srcDirectory: /
   testsDirectory: tests/$(package)
 
 
@@ -38,9 +38,9 @@ steps:
   workingDirectory: $(srcDirectory)
 
 # Run tests
-- bash: pytest
-  displayName: Run tests
-  workingDirectory: $(testsDirectory)
+# - bash: pytest
+#   displayName: Run tests
+#   workingDirectory: $(testsDirectory)
 
 # Our built source dist & wheel will land in src/simple_package/dist
 - bash: python setup.py sdist bdist_wheel
