@@ -43,16 +43,16 @@ steps:
 #   workingDirectory: $(testsDirectory)
 
 # Our built source dist & wheel will land in src/simple_package/dist
-- bash: python setup.py sdist bdist_wheel
-  displayName: Build package
-  workingDirectory: $(srcDirectory)
+# - bash: python setup.py sdist bdist_wheel
+#   displayName: Build package
+#   workingDirectory: $(srcDirectory)
 
 # Upload everything in src/simple_package/dist to the build artifacts for later use or debugging
 - task: PublishPipelineArtifact@0
   displayName: Publish artifacts
   inputs:
     artifactName: dist
-    targetPath: $(srcDirectory)/dist
+    targetPath: $(srcDirectory)
 
 - script: |
     echo Add other tasks to build, test, and deploy your project.
