@@ -5,7 +5,7 @@
 variables:
   pythonVersion: 3.7
   package: simple_package
-  srcDirectory: /
+  srcDirectory: src
   testsDirectory: tests/$(package)
 
 
