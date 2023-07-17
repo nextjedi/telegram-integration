@@ -159,7 +159,7 @@ async def trade(event):
 async def main():
     channel = await client.get_entity(PeerChannel(1752927494))
     messages = await client.get_messages(channel, limit= 300) #pass your own args
-    d1 = datetime.datetime(2023, 3,13 )
+    d1 = datetime.datetime(2023, 7,14 )
     #then if you want to get all the messages text
     playmsg=[]
     for x in messages:
@@ -177,9 +177,9 @@ async def main():
         count =await handleMessages(m)
         
 
-# loop = asyncio.get_event_loop()
-# loop.run_until_complete(main())
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main())
 
 
 
-client.run_until_disconnected()
+# client.run_until_disconnected()
