@@ -12,7 +12,7 @@ api_hash = "1439cfbf90f01a34ac35a507bdf3052d"
 phone_number = +918867375708
 
 # Read the API endpoint URL from config.ini file
-api_url = "http://localhost:8080/"
+api_url = "https://tip-trading.calmbay-8cb6b31c.eastus.azurecontainerapps.io/"
 
 # Create a TelegramClient instance
 client = TelegramClient('session_name', api_id, api_hash)

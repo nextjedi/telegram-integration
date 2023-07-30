@@ -13,17 +13,20 @@ from telethon import TelegramClient,events
 from telethon.tl.types import PeerUser, PeerChat, PeerChannel
 from telethon.tl import functions, types
 import datetime
+
+import ssl
+ssl._create_default_https_context = ssl._create_unverified_context
 api_id = "23626680"
 api_hash = "1439cfbf90f01a34ac35a507bdf3052d"
-ip = "http://13.233.83.163:8080/"
+ip = "https://tip-trading.calmbay-8cb6b31c.eastus.azurecontainerapps.io/"
 client = TelegramClient('session_name', api_id, api_hash)
-ipport = "http://localhost:8080"
-# ipport = "http://13.233.83.163:8080/"
+# ipport = "http://localhost:8080"
 
 def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
     driver = uc.Chrome()
     print("going to login")
     driver.get(f'https://kite.trade/connect/login?api_key={api_key}&v=3')
+    print("here")
     login_id = WebDriverWait(driver, 10).until(
         lambda x: x.find_element(by=By.XPATH, value='//*[@id="userid"]'))
     login_id.send_keys(user_id)
@@ -59,10 +62,10 @@ def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
     driver.close()
     print("logged in successfully going to call api")
     kite = KiteConnect(api_key=api_key)
-    #print(request_token)
+    print(ip)
     res =requests.post(url=ip+"toke",data=request_token)
     print(res.status_code)
-    requests.post(url=ipport+"/toke",data=request_token)
+    # requests.post(url=ipport+"/toke",data=request_token)
 
 
 
@@ -124,14 +127,10 @@ async def handleMessages(m):
             "instrumentType":instrumentType
         },"price": trigger}
         print (data)
-        requests.post(url=ipport+"/tip",json=data)
-        requests.post(url=ip+"tip",json=data)
-        # utsav= await client.get_entity("@Urstrulyutsav29")
-        # amit= await client.get_entity("@amitt0005")
-        # robin= await client.get_entity("+917022557231")
-        # await client.send_message(entity=utsav,message=instrument +" "+ str(trigger))
-        # await client.send_message(entity=amit,message=str(data))
-        # await client.send_message(entity=robin,message=str(data))
+        res = requests.post(url=ip+"tip",json=data)
+        print(res.status_code)
+        amit= await client.get_entity("@amitt0005")
+        robin= await client.get_entity("+917022557231")
         # reset
 
 @client.on(events.NewMessage(chats="@Nextjedi_algo_bot"))
@@ -158,8 +157,8 @@ async def trade(event):
 
 async def main():
     channel = await client.get_entity(PeerChannel(1752927494))
-    messages = await client.get_messages(channel, limit= 300) #pass your own args
-    d1 = datetime.datetime(2023, 7,13 )
+    messages = await client.get_messages(channel, limit= 500) #pass your own args
+    d1 = datetime.datetime(2023, 7,28)
     #then if you want to get all the messages text
     playmsg=[]
     for x in messages:
@@ -177,8 +176,8 @@ async def main():
         count =await handleMessages(m)
         
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(main())
+# loop = asyncio.get_event_loop()
+# loop.run_until_complete(main())
 
 
 
