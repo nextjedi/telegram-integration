@@ -4,6 +4,7 @@ import requests
 from kiteconnect import KiteConnect
 from kiteconnect import KiteTicker
 import undetected_chromedriver as uc
+from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.by import By
 import time
@@ -23,7 +24,9 @@ client = TelegramClient('session_name', api_id, api_hash)
 # ipport = "http://localhost:8080"
 
 def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
-    driver = uc.Chrome()
+    options = webdriver.ChromeOptions() 
+    options.headless = True
+    driver = uc.Chrome(options=options)
     print("going to login")
     driver.get(f'https://kite.trade/connect/login?api_key={api_key}&v=3')
     print("here")
