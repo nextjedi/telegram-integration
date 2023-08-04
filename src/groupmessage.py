@@ -21,7 +21,7 @@ api_id = "23626680"
 api_hash = "1439cfbf90f01a34ac35a507bdf3052d"
 ip = "https://tip-trading.calmbay-8cb6b31c.eastus.azurecontainerapps.io/"
 client = TelegramClient('session_name', api_id, api_hash)
-# ipport = "http://localhost:8080"
+# ip = "http://localhost:8080/"
 
 def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
     options = webdriver.ChromeOptions() 
@@ -67,8 +67,7 @@ def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
     kite = KiteConnect(api_key=api_key)
     print(ip)
     res =requests.post(url=ip+"toke",data=request_token)
-    print(res.status_code)
-    # requests.post(url=ipport+"/toke",data=request_token)
+    print("login token api call db inserted status -> ",res.status_code)
 
 
 
@@ -126,7 +125,7 @@ async def handleMessages(m):
         data = {"instrument": {
             "name":instrument,
             "strike":strike,
-            "expiry":str(date),
+            # "expiry":str(date),
             "instrumentType":instrumentType
         },"price": trigger}
         print (data)
