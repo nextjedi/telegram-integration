@@ -69,7 +69,10 @@ def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
     res =requests.post(url=ip+"toke",data=request_token)
     print("login token api call db inserted status -> ",res.status_code)
 
-
+def updateInstrument():
+    print("updating instruments")
+    res =requests.post(url=ip+"instruments")
+    print(res.status_code)
 
 client.start()
 async def handleMessages(m):
@@ -143,6 +146,7 @@ async def getToken(event):
         login_in_zerodha('2himf7a1ff5edpjy', '87mebxtvu3226igmjnkjfjfcrgiphfxb',
                                'LU2942', 'Ap@240392',
                                'KZHIZCXRM5OL3XJUFL7EAPJQOJ6H5HH2')
+        updateInstrument()
     # sent token api
 
 # get message from bank nifty
