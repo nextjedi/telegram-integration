@@ -14,7 +14,7 @@ from telethon import TelegramClient,events
 from telethon.tl.types import PeerUser, PeerChat, PeerChannel
 from telethon.tl import functions, types
 import datetime
-
+import json
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 api_id = "23626680"
@@ -25,7 +25,7 @@ client = TelegramClient('session_name', api_id, api_hash)
 
 def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
     options = webdriver.ChromeOptions() 
-    options.headless = True
+    # options.add_argument('--headless')
     driver = uc.Chrome(options=options)
     print("going to login")
     driver.get(f'https://kite.trade/connect/login?api_key={api_key}&v=3')
@@ -65,8 +65,12 @@ def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
     driver.close()
     print("logged in successfully going to call api")
     kite = KiteConnect(api_key=api_key)
-    print(ip)
-    res =requests.post(url=ip+"toke",data=request_token)
+    print(str(request_token))
+    dat = {"requestToken": request_token, 
+           "userId": user_id}
+    print(dat)
+    headers = {'Content-type': "Application/json"}
+    res =requests.post(url=ip+"toke",data=json.dumps(dat),headers=headers)
     print("login token api call db inserted status -> ",res.status_code)
 
 def updateInstrument():
@@ -146,6 +150,9 @@ async def getToken(event):
         login_in_zerodha('2himf7a1ff5edpjy', '87mebxtvu3226igmjnkjfjfcrgiphfxb',
                                'LU2942', 'Ap@240392',
                                'KZHIZCXRM5OL3XJUFL7EAPJQOJ6H5HH2')
+        login_in_zerodha('qxx4bvrmb0iw6bb1', 'b6r8eil0vuzrti7c8vkzenzpsm2mb85g',
+                               'FHS049', 'Ardorbrother@11',
+                               'YFUKTD6FYVIK6TH2OHZHKEMZPH3MONVV')
         updateInstrument()
     # sent token api
 
