@@ -25,7 +25,7 @@ client = TelegramClient('session_name', api_id, api_hash)
 
 def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
     options = webdriver.ChromeOptions() 
-    # options.add_argument('--headless')
+    options.add_argument('--headless')
     driver = uc.Chrome(options=options)
     print("going to login")
     driver.get(f'https://kite.trade/connect/login?api_key={api_key}&v=3')
