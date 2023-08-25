@@ -26,7 +26,7 @@ client = TelegramClient('session_name', api_id, api_hash)
 def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
     options = webdriver.ChromeOptions() 
     options.add_argument('--headless')
-    driver = uc.Chrome(options=options)
+    driver = uc.Chrome()
     print("going to login")
     driver.get(f'https://kite.trade/connect/login?api_key={api_key}&v=3')
     print("here")
@@ -138,8 +138,8 @@ async def handleMessages(m):
         print (data)
         res = requests.post(url=ip+"tip",json=data)
         print(res.status_code)
-        amit= await client.get_entity("@amitt0005")
-        robin= await client.get_entity("+917022557231")
+        # amit= await client.get_entity("@amitt0005")
+        # robin= await client.get_entity("+917022557231")
         # reset
 
 @client.on(events.NewMessage(chats="@Nextjedi_algo_bot"))
@@ -160,13 +160,18 @@ async def getToken(event):
 @client.on(events.NewMessage(chats=1752927494))
 async def trade(event):
     print(event.message.text)
+    robin= await client.get_entity("+917022557231")
+    await client.send_message(entity=robin,message=str("BTST ->" + event.message.text))
     await handleMessages(event.message)
 
-# # get message from BTST
-# @client.on(events.NewMessage(chats=1752927494))
-# async def trade(event):
-#     # call another method for btst
-#     handleMessages(event.message)
+# get message from BTST
+@client.on(events.NewMessage(chats=1552501322))
+async def trade(event):
+    # call another method for btst
+    # handleMessages(event.message)
+    robin= await client.get_entity("+917022557231")
+    await client.send_message(entity=robin,message=str("BTST ->" + event.message.text))
+
 
 async def main():
     channel = await client.get_entity(PeerChannel(1752927494))
