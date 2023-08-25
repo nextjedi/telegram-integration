@@ -161,7 +161,7 @@ async def getToken(event):
 async def trade(event):
     print(event.message.text)
     robin= await client.get_entity("+917022557231")
-    await client.send_message(entity=robin,message=str("BTST ->" + event.message.text))
+    await client.send_message(entity=robin,message=str("normal call ->" + event.message.text))
     await handleMessages(event.message)
 
 # get message from BTST
