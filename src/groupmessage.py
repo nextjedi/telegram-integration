@@ -70,7 +70,7 @@ def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
            "userId": user_id}
     print(dat)
     headers = {'Content-type': "Application/json"}
-    res =requests.post(url=ip+"toke",data=json.dumps(dat),headers=headers)
+    res =requests.post(url=ip+"token",data=json.dumps(dat),headers=headers)
     print("login token api call db inserted status -> ",res.status_code)
 
 def updateInstrument():
