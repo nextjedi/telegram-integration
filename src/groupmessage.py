@@ -155,17 +155,21 @@ async def getToken(event):
                                'FHS049', 'Ardorbrother@11',
                                'YFUKTD6FYVIK6TH2OHZHKEMZPH3MONVV')
         updateInstrument()
+    send_message_forward("bot",event.message.message)
     # sent token api
 async def send_message_forward(group,text):
-    amit= await client.get_entity("@amitt0005")
-    robin= await client.get_entity("+917022557231")
-    await client.send_message(entity=robin,message=str( group+" ->" + text))
-    await client.send_message(entity=amit,message=str( group+" ->" + text))
+    try:
+        amit= await client.get_entity("@amitt0005")
+        robin= await client.get_entity("+917022557231")
+        await client.send_message(entity=robin,message=str( group+" ->" + text))
+        await client.send_message(entity=amit,message=str( group+" ->" + text))
+    except:
+        print("something went wrong")
 # get message from bank nifty
 @client.on(events.NewMessage(chats=1752927494))
 async def trade(event):
     print(event.message.text)
-    send_message_forward("day trade", event.message.text)
+    send_message_forward("day trade", event.message.message)
     await handleMessages(event.message)
 
 # get message from BTST
@@ -173,7 +177,7 @@ async def trade(event):
 async def trade(event):
     # call another method for btst
     # handleMessages(event.message)
-    send_message_forward("btst", event.message.text)
+    send_message_forward("btst", event.message.message)
 
 
 async def main():
