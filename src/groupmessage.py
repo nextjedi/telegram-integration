@@ -19,7 +19,7 @@ import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 api_id = "23626680"
 api_hash = "1439cfbf90f01a34ac35a507bdf3052d"
-ip = "https://demo-temp.calmbay-8cb6b31c.eastus.azurecontainerapps.io"
+ip = "https://demo-temp.calmbay-8cb6b31c.eastus.azurecontainerapps.io/"
 client = TelegramClient('session_name', api_id, api_hash)
 # ip = "http://localhost:8080/"
 
