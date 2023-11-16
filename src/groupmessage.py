@@ -80,7 +80,8 @@ async def handleMessages(m,group):
             "strike":strike,
             # "expiry":str(date),
             "instrumentType":instrumentType
-        },"price": trigger}
+        },"price": trigger,
+        "type":group}
         print (data)
         res = requests.post(url=ip+"tip",json=data)
         print(res.status_code)
