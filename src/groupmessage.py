@@ -19,68 +19,13 @@ import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 api_id = "23626680"
 api_hash = "1439cfbf90f01a34ac35a507bdf3052d"
-ip = "https://demo-temp.calmbay-8cb6b31c.eastus.azurecontainerapps.io/"
+ip = "https://tip-based-trading.azurewebsites.net/"
 client = TelegramClient('session_name', api_id, api_hash)
 # ip = "http://localhost:8080/"
 
-def login_in_zerodha(api_key, api_secret, user_id, user_pwd, totp_key):
-    options = webdriver.ChromeOptions() 
-    options.add_argument('--headless')
-    options.add_argument("--no-sandbox") 
-    driver = uc.Chrome(options=options)
-    print("going to login")
-    driver.get(f'https://kite.trade/connect/login?api_key={api_key}&v=3')
-    print("here")
-    login_id = WebDriverWait(driver, 10).until(
-        lambda x: x.find_element(by=By.XPATH, value='//*[@id="userid"]'))
-    login_id.send_keys(user_id)
-
-    pwd = WebDriverWait(driver, 10).until(
-        lambda x: x.find_element(by=By.XPATH, value='//*[@id="password"]'))
-    pwd.send_keys(user_pwd)
-
-    submit = WebDriverWait(driver, 10).until(lambda x: x.find_element(
-        by=By.XPATH,
-        value='//*[@id="container"]/div/div/div[2]/form/div[4]/button'))
-    submit.click()
-
-    time.sleep(1)
-
-    totp = WebDriverWait(driver, 10).until(lambda x: x.find_element(
-        by=By.XPATH,
-        value='/html/body/div[1]/div/div[2]/div[1]/div[2]/div/div[2]/form/div[1]/input'))
-    authkey = pyotp.TOTP(totp_key)
-    totp.send_keys(authkey.now())
-
-    # continue_btn = WebDriverWait(driver, 10).until(lambda x: x.find_element(
-    #     by=By.XPATH,
-    #     value='//*[@id="container"]/div/div/div[2]/form/div[3]/button'))
-    # continue_btn.click()
-
-    time.sleep(5)
-
-    url = driver.current_url
-    initial_token = url.split('request_token=')[1]
-    request_token = initial_token.split('&')[0]
-
-    driver.close()
-    print("logged in successfully going to call api")
-    kite = KiteConnect(api_key=api_key)
-    print(str(request_token))
-    dat = {"requestToken": request_token, 
-           "userId": user_id}
-    print(dat)
-    headers = {'Content-type': "Application/json"}
-    res =requests.post(url=ip+"token",data=json.dumps(dat),headers=headers)
-    print("login token api call db inserted status -> ",res.status_code)
-
-def updateInstrument():
-    print("updating instruments")
-    res =requests.post(url=ip+"instruments")
-    print(res.status_code)
 
 client.start()
-async def handleMessages(m):
+async def handleMessages(m,group):
     # print(m.text)
     trigger = 0
     today = datetime.date.today()
@@ -139,6 +84,7 @@ async def handleMessages(m):
         print (data)
         res = requests.post(url=ip+"tip",json=data)
         print(res.status_code)
+        send_message_forward(group,data)
         # amit= await client.get_entity("@amitt0005")
         # robin= await client.get_entity("+917022557231")
         # reset
@@ -146,38 +92,29 @@ async def handleMessages(m):
 @client.on(events.NewMessage(chats="@Nextjedi_algo_bot"))
 async def getToken(event):
     print(event.message.message)
-    print(event.message.message)
-    if event.message.message.lower() == "token":
-        login_in_zerodha('2himf7a1ff5edpjy', '87mebxtvu3226igmjnkjfjfcrgiphfxb',
-                               'LU2942', 'Ap@240392',
-                               'KZHIZCXRM5OL3XJUFL7EAPJQOJ6H5HH2')
-        login_in_zerodha('qxx4bvrmb0iw6bb1', 'b6r8eil0vuzrti7c8vkzenzpsm2mb85g',
-                               'FHS049', 'Ardorbrother@11',
-                               'YFUKTD6FYVIK6TH2OHZHKEMZPH3MONVV')
-        updateInstrument()
     await send_message_forward("bot",event.message.message)
     # sent token api
 async def send_message_forward(group,text):
     try:
-        amit= await client.get_entity("@amitt0005")
-        robin= await client.get_entity("+917022557231")
+        amit= await client.get_entity("@amitt2005")
+        robin= await client.get_entity("@robinpd26")
         await client.send_message(entity=robin,message=str( group+" ->" + text))
         await client.send_message(entity=amit,message=str( group+" ->" + text))
     except:
-        print("something went wrong")
+        print("something went wrongdd")
 # get message from bank nifty
 @client.on(events.NewMessage(chats=1752927494))
 async def trade(event):
     print(event.message.text)
-    await send_message_forward("day trade", event.message.message)
-    await handleMessages(event.message)
+    await handleMessages(event.message,"DAY")
 
 # get message from BTST
 @client.on(events.NewMessage(chats=1552501322))
 async def trade(event):
     # call another method for btst
-    # handleMessages(event.message)
-    await send_message_forward("btst", event.message.message)
+    handleMessages(event.message)
+    await handleMessages(event.message,"BTST")
+    
 
 
 async def main():
