@@ -19,9 +19,11 @@ import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
 api_id = "23626680"
 api_hash = "1439cfbf90f01a34ac35a507bdf3052d"
-ip = "https://tip-based-trading.azurewebsites.net/"
+# ip = "https://tip-based-trading.azurewebsites.net/"
 client = TelegramClient('session_name', api_id, api_hash)
-# ip = "http://localhost:8080/"
+ip = "http://localhost:80/"
+btst = -1001552501322
+daytrade = -1001752927494
 
 
 client.start()
@@ -81,11 +83,13 @@ async def handleMessages(m,group):
             # "expiry":str(date),
             "instrumentType":instrumentType
         },"price": trigger,
+        "stopLoss":trigger-100,
+        "target":trigger+100,
         "type":group}
         print (data)
         res = requests.post(url=ip+"tip",json=data)
         print(res.status_code)
-        send_message_forward(group,data)
+        # await send_message_forward(group,data)
         # amit= await client.get_entity("@amitt0005")
         # robin= await client.get_entity("+917022557231")
         # reset
@@ -99,18 +103,18 @@ async def send_message_forward(group,text):
     try:
         amit= await client.get_entity("@amitt2005")
         robin= await client.get_entity("@robinpd26")
-        await client.send_message(entity=robin,message=str( group+" ->" + text))
-        await client.send_message(entity=amit,message=str( group+" ->" + text))
+        # await client.send_message(entity=robin,message=str( group+" ->" + text))
+        # await client.send_message(entity=amit,message=str( group+" ->" + text))
     except:
         print("something went wrongdd")
 # get message from bank nifty
-@client.on(events.NewMessage(chats=1752927494))
+@client.on(events.NewMessage(chats=daytrade))
 async def trade(event):
     print(event.message.text)
     await handleMessages(event.message,"DAY")
 
 # get message from BTST
-@client.on(events.NewMessage(chats=1552501322))
+@client.on(events.NewMessage(chats=-btst))
 async def trade(event):
     # call another method for btst
     handleMessages(event.message)
@@ -119,9 +123,10 @@ async def trade(event):
 
 
 async def main():
-    channel = await client.get_entity(PeerChannel(1752927494))
+    print("here")
+    channel = await client.get_entity(PeerChannel(daytrade))
     messages = await client.get_messages(channel, limit= 500) #pass your own args
-    d1 = datetime.datetime(2023, 7,28)
+    d1 = datetime.datetime(2023, 11,28)
     #then if you want to get all the messages text
     playmsg=[]
     for x in messages:
@@ -136,7 +141,7 @@ async def main():
     playmsg.reverse()
     count =0
     for m in playmsg:
-        count =await handleMessages(m)
+        count =await handleMessages(m,"DAY")
         
 
 # loop = asyncio.get_event_loop()
