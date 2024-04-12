@@ -1,3 +1,4 @@
+kiteconnect
 flake8
 pip
 pylint
