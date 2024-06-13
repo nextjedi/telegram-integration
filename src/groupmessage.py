@@ -89,9 +89,9 @@ async def handleMessages(m, group):
             "target": trigger + 100,
             "type": group}
         print(data)
-        res = requests.post(url=ip + "tip", json=data)
-        print(res.status_code)
-        # await send_message_forward(group,data)
+        # res = requests.post(url=ip + "tip", json=data)
+        # print(res.status_code)
+        await send_message_forward(group, data)
         # amit= await client.get_entity("@amitt0005")
         # robin= await client.get_entity("+917022557231")
         # reset
@@ -100,25 +100,27 @@ async def handleMessages(m, group):
 @client.on(events.NewMessage(chats="@Nextjedi_algo_bot"))
 async def getToken(event):
     print(event.message.message)
-    # await send_message_forward("bot", event.message.message)
+    await send_message_forward("bot", event.message.message)
     # sent token api
 
 
 async def send_message_forward(group, text):
-    try:
-        amit = await client.get_entity("@amitt2005")
-        # robin= await client.get_entity("@robinpd26")
-        # await client.send_message(entity=robin,message=str( group+" ->" + text))
-        # await client.send_message(entity=amit,message=str( group+" ->" + text))
-    except:
-        print("something went wrongdd")
+    # try:
+    amit = await client.get_entity("@ImRajAmit")
+    robin = await client.get_entity("@robinpd26")
+    nishu = await client.get_entity("@Aapainashergil")
+    await client.send_message(entity=nishu, message=str(group + " ->" + text))
+    await client.send_message(entity=robin, message=str(group + " ->" + text))
+    await client.send_message(entity=amit, message=str(group + " ->" + text))
+    # except:
+    #     print("something went wrongdd")
 
 
 # get message from bank nifty
 @client.on(events.NewMessage(chats=daytrade))
 async def trade(event):
     print(event.message.text)
-    # await handleMessages(event.message, "DAY")
+    await handleMessages(event.message, "DAY")
 
 
 # get message from BTST
@@ -132,11 +134,11 @@ async def main():
     print("here")
     channel = await client.get_entity(PeerChannel(daytrade))
     messages = await client.get_messages(channel, limit=500)  # pass your own args
-    d1 = datetime.datetime(2024, 4, 12)
+    d1 = datetime.datetime(2024, 5, 24)
     # then if you want to get all the messages text
     playmsg = []
     for x in messages:
-        if (x.date.date() == d1.date()):
+        if x.date.date() == d1.date():
             print(x.date)
             print(x.message)  # return message.text
             playmsg.append(x)
@@ -151,8 +153,8 @@ async def main():
         count = await handleMessages(m, "DAY")
 
 
-# loop = asyncio.get_event_loop()
-# loop.run_until_complete(main())
+loop = asyncio.get_event_loop()
+loop.run_until_complete(main())
 
 
 client.run_until_disconnected()
