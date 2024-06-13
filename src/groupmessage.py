@@ -91,9 +91,7 @@ async def handleMessages(m, group):
         print(data)
         # res = requests.post(url=ip + "tip", json=data)
         # print(res.status_code)
-        await send_message_forward(group, data)
-        # amit= await client.get_entity("@amitt0005")
-        # robin= await client.get_entity("+917022557231")
+        await send_message_forward(group, str(data))
         # reset
 
 
@@ -105,15 +103,17 @@ async def getToken(event):
 
 
 async def send_message_forward(group, text):
-    # try:
-    amit = await client.get_entity("@ImRajAmit")
-    robin = await client.get_entity("@robinpd26")
-    nishu = await client.get_entity("@Aapainashergil")
-    await client.send_message(entity=nishu, message=str(group + " ->" + text))
-    await client.send_message(entity=robin, message=str(group + " ->" + text))
-    await client.send_message(entity=amit, message=str(group + " ->" + text))
-    # except:
-    #     print("something went wrongdd")
+    try:
+        amit = await client.get_entity("@ImRajAmit")
+        robin = await client.get_entity("@robinpd26")
+        nishu = await client.get_entity("@Aapainashergil")
+        bunty = await client.get_entity("@anraj8671")
+        await client.send_message(entity=nishu, message=str(group + " ->" + text))
+        await client.send_message(entity=robin, message=str(group + " ->" + text))
+        await client.send_message(entity=amit, message=str(group + " ->" + text))
+        await client.send_message(entity=bunty, message=str(group + " ->" + text))
+    except:
+        print("something went wrong")
 
 
 # get message from bank nifty
