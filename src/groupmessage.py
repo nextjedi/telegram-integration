@@ -1,28 +1,16 @@
-import asyncio
-import calendar
-import requests
-from kiteconnect import KiteConnect
-from kiteconnect import KiteTicker
-import undetected_chromedriver as uc
-from selenium import webdriver
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
-import time
-import requests
-import pyotp
-from telethon import TelegramClient, events
-from telethon.tl.types import PeerUser, PeerChat, PeerChannel
-from telethon.tl import functions, types
 import datetime
-import json
 import ssl
+
+import requests
+from telethon import TelegramClient, events
+from telethon.tl.types import PeerChannel
 
 ssl._create_default_https_context = ssl._create_unverified_context
 api_id = "23626680"
 api_hash = "1439cfbf90f01a34ac35a507bdf3052d"
-# ip = "https://tip-based-trading.azurewebsites.net/"
+ip = "https://tip-based-trading.azurewebsites.net/"
 client = TelegramClient('session_name', api_id, api_hash)
-ip = "http://localhost:80/"
+# ip = "http://localhost:80/"
 btst = -1001552501322
 daytrade = -1001752927494
 
@@ -89,8 +77,8 @@ async def handleMessages(m, group):
             "target": trigger + 100,
             "type": group}
         print(data)
-        # res = requests.post(url=ip + "tip", json=data)
-        # print(res.status_code)
+        res = requests.post(url=ip + "tip", json=data)
+        print(res.status_code)
         await send_message_forward(group, str(data))
         # reset
 
@@ -153,8 +141,8 @@ async def main():
         count = await handleMessages(m, "DAY")
 
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(main())
+# loop = asyncio.get_event_loop()
+# loop.run_until_complete(main())
 
 
 client.run_until_disconnected()
