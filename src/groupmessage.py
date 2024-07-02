@@ -96,10 +96,12 @@ async def send_message_forward(group, text):
         robin = await client.get_entity("@robinpd26")
         nishu = await client.get_entity("@Aapainashergil")
         bunty = await client.get_entity("@anraj8671")
+        vivek = await client.get_entity("@im_vvks")
         await client.send_message(entity=nishu, message=str(group + " ->" + text))
         await client.send_message(entity=robin, message=str(group + " ->" + text))
         await client.send_message(entity=amit, message=str(group + " ->" + text))
         await client.send_message(entity=bunty, message=str(group + " ->" + text))
+        await client.send_message(entity=vivek, message=str(group + " ->" + text))
     except:
         print("something went wrong")
 
