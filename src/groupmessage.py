@@ -79,7 +79,7 @@ async def handleMessages(m, group):
         print(data)
         res = requests.post(url=ip + "tip", json=data)
         print(res.status_code)
-        await send_message_forward(group, str(data))
+        # await send_message_forward(group, str(data))
         # reset
 
 
@@ -111,6 +111,7 @@ async def send_message_forward(group, text):
 async def trade(event):
     print(event.message.text)
     await handleMessages(event.message, "DAY")
+    await send_message_forward(event.message, "DAY")
 
 
 # get message from BTST
@@ -118,6 +119,7 @@ async def trade(event):
 async def trade(event):
     # call another method for btst
     await handleMessages(event.message, "BTST")
+    await send_message_forward(event.message, "BTST")
 
 
 async def main():
