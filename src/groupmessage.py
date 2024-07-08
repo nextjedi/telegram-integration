@@ -110,16 +110,16 @@ async def send_message_forward(group, text):
 @client.on(events.NewMessage(chats=daytrade))
 async def trade(event):
     print(event.message.text)
+    await send_message_forward(event.message.message, "DAY")
     await handleMessages(event.message, "DAY")
-    await send_message_forward(event.message, "DAY")
 
 
 # get message from BTST
 @client.on(events.NewMessage(chats=-btst))
 async def trade(event):
     # call another method for btst
+    await send_message_forward(event.message.message, "BTST")
     await handleMessages(event.message, "BTST")
-    await send_message_forward(event.message, "BTST")
 
 
 async def main():
