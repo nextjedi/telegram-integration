@@ -18,14 +18,24 @@ Path("src/test_data/images").mkdir(parents=True, exist_ok=True)
 Path("src/test_data/parsing_results").mkdir(parents=True, exist_ok=True)
 
 ssl._create_default_https_context = ssl._create_unverified_context
-api_id = "23626680"
-api_hash = "1439cfbf90f01a34ac35a507bdf3052d"
-ip = "https://tip-based-trading.azurewebsites.net/"
-client = TelegramClient('session_name', api_id, api_hash)
-# ip = "http://localhost:80/"
-btst = -1001552501322
-daytrade = -1001752927494
-univest = -1001983880498
+
+# Load configuration from environment variables
+api_id = os.getenv("TELEGRAM_API_ID")
+api_hash = os.getenv("TELEGRAM_API_HASH")
+phone_number = os.getenv("TELEGRAM_PHONE_NUMBER")
+api_endpoint = os.getenv("TRADING_API_ENDPOINT", "https://tip-based-trading.azurewebsites.net/")
+session_name = os.getenv("TELEGRAM_SESSION_NAME", "telegram_trading_session")
+
+# Channel IDs from environment or defaults
+btst_channel = int(os.getenv("BTST_CHANNEL_ID", "-1001552501322"))
+daytrade_channel = int(os.getenv("DAYTRADE_CHANNEL_ID", "-1001752927494"))
+univest_channel = int(os.getenv("UNIVEST_CHANNEL_ID", "-1001983880498"))
+
+# Validate required environment variables
+if not api_id or not api_hash or not phone_number:
+    raise ValueError("Missing required environment variables: TELEGRAM_API_ID, TELEGRAM_API_HASH, TELEGRAM_PHONE_NUMBER")
+
+client = TelegramClient(session_name, api_id, api_hash)
 
 # client.start() will be called inside async context
 
@@ -183,28 +193,18 @@ async def process_trading_data(data, group, message_obj, is_medium_confidence=Fa
             print("[API] Would send to API (commented out for testing)...")
             print(f"[DATA] API Data: {api_data}")
             
-            # try:
-            #     print("📤 Sending to API...")
-            #     response = requests.post(url=ip + "tip", json=api_data, timeout=10)
-            #     print(f"✅ API Response: {response.status_code}")
-            #     
-            #     if response.status_code == 200:
-            #         # Forward to users on successful API call
-            #         user_msg = (f"🎯 {api_data['instrument']['name']} "
-            #                   f"{api_data['instrument']['strike']} "
-            #                   f"{api_data['instrument']['instrumentType']}\n"
-            #                   f"💰 Entry: {api_data['price']}\n"
-            #                   f"🛑 SL: {api_data['stopLoss']}\n"
-            #                   f"🎯 Target: {api_data['target']}\n"
-            #                   f"📊 Confidence: {data.get('confidence')}%")
-            #         
-            #         await send_message_forward(group, user_msg)
-            #         print("✅ Call forwarded to users")
-            #     else:
-            #         print(f"⚠️ API returned status code: {response.status_code}")
-            #         
-            # except requests.RequestException as e:
-            #     print(f"❌ API request failed: {e}")
+            try:
+                print("📤 Sending to API...")
+                response = requests.post(url=api_endpoint + "tip", json=api_data, timeout=10)
+                print(f"✅ API Response: {response.status_code}")
+                
+                if response.status_code == 200:
+                    print("✅ Trading call successfully sent to API")
+                else:
+                    print(f"⚠️ API returned status code: {response.status_code}")
+                    
+            except requests.RequestException as e:
+                print(f"❌ API request failed: {e}")
         else:
             # For medium confidence, just log but don't send to API
             print("[LOG] Medium confidence call logged, not sent to API")
@@ -227,23 +227,20 @@ async def handleMessages_old_backup(m, group):
 
 
 # get message from bank nifty (daytrade)
-@client.on(events.NewMessage(chats=daytrade))
+@client.on(events.NewMessage(chats=daytrade_channel))
 async def trade(event):
     print(event.message.text)
-    # await send_message_forward(event.message.message, "DAY")  # Commented out
     await handleMessages(event.message, "DAY")
 
 
 # get message from BTST
-@client.on(events.NewMessage(chats=-btst))
+@client.on(events.NewMessage(chats=btst_channel))
 async def trade_btst(event):
-    # call another method for btst
-    # await send_message_forward(event.message.message, "BTST")  # Commented out
     await handleMessages(event.message, "BTST")
 
 
 # get message from univest
-@client.on(events.NewMessage(chats=univest))
+@client.on(events.NewMessage(chats=univest_channel))
 async def trade_univest(event):
     print(f"[UNIVEST] Message: {event.message.text}")
     await handleMessages(event.message, "UNIVEST")
@@ -414,7 +411,7 @@ async def save_parsing_result(message_obj, call_data, group):
 
 async def main():
     try:
-        await client.start(phone=lambda: "+918867375708")
+        await client.start(phone=lambda: phone_number)
         print("Connected to Telegram successfully!")
     except Exception as e:
         print(f"Error connecting: {e}")
@@ -426,15 +423,15 @@ async def main():
     
     # Get recent messages from daytrade channel and test parsing
     print("\n[FETCH] Fetching recent messages from daytrade channel...")
-    daytrade_channel = await client.get_entity(PeerChannel(daytrade))
-    recent_messages = await client.get_messages(daytrade_channel, limit=1000)  # Get more messages for better analysis
+    daytrade_entity = await client.get_entity(PeerChannel(daytrade_channel))
+    recent_messages = await client.get_messages(daytrade_entity, limit=1000)  # Get more messages for better analysis
     
     print(f"[PROC] Processing {len(recent_messages)} recent messages from daytrade...\n")
     
     # Also fetch from univest for comparison
     print("\n[FETCH] Fetching recent messages from univest channel...")
-    univest_channel = await client.get_entity(PeerChannel(univest))
-    univest_messages = await client.get_messages(univest_channel, limit=500)
+    univest_entity = await client.get_entity(PeerChannel(univest_channel))
+    univest_messages = await client.get_messages(univest_entity, limit=500)
     
     print(f"[PROC] Processing {len(univest_messages)} recent messages from univest...\n")
     
