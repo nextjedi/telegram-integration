@@ -46,7 +46,35 @@ univest_channel = int(os.getenv("UNIVEST_CHANNEL_ID", "-1001983880498"))
 if not api_id or not api_hash or not phone_number:
     raise ValueError("Missing required environment variables: TELEGRAM_API_ID, TELEGRAM_API_HASH, TELEGRAM_PHONE_NUMBER")
 
-client = TelegramClient(session_name, api_id, api_hash)
+# Check for session file in mounted volume first, then fall back to local
+session_paths = [
+    f"/app/sessions/{session_name}.session",  # Mounted Azure File Share
+    f"{session_name}.session"  # Local fallback
+]
+
+session_file_path = None
+for path in session_paths:
+    if os.path.exists(path):
+        session_file_path = path
+        logger.info(f"Found session file at: {path}")
+        break
+
+if session_file_path and "/app/sessions/" in session_file_path:
+    # Copy session file from mounted volume to local writable location
+    import shutil
+    local_session_path = f"/app/{session_name}.session"
+    shutil.copy2(session_file_path, local_session_path)
+    logger.info(f"Copied session file to writable location: {local_session_path}")
+    client = TelegramClient(session_name, api_id, api_hash)  # Use local copy
+elif session_file_path:
+    # Use existing local session file
+    session_path = session_file_path.replace('.session', '')
+    client = TelegramClient(session_path, api_id, api_hash)
+    logger.info(f"Using local session file: {session_file_path}")
+else:
+    # No existing session found, create new one
+    client = TelegramClient(session_name, api_id, api_hash)
+    logger.info(f"No existing session found, creating new: {session_name}.session")
 
 
 def is_trading_hours():
