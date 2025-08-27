@@ -74,17 +74,173 @@ In your GitHub repository, go to **Settings > Secrets and Variables > Actions** 
 
 ## Step 3: Session File Handling
 
-The Telegram session file needs to be created once and stored securely:
+The Telegram session file is stored in Azure File Share for persistence across deployments.
 
-### 3.1 Generate Session Locally
+### 3.1 Initial Setup - Azure File Share Storage
+
+#### Create Storage Account and File Share
 ```bash
-# Run locally first to generate session
-python src/telegram_bot.py
-# This will prompt for phone number and verification code
+# Storage account already exists: telegramint6a7207
+# File share already exists: telegram-sessions
+
+# If you need to create new ones:
+az storage account create --name <storage-name> --resource-group AlgoTrading --location southindia --sku Standard_LRS
+az storage share create --name telegram-sessions --account-name <storage-name>
 ```
 
-### 3.2 Upload Session to Azure (Manual Step)
-The session file (`telegram_trading_session.session`) should be uploaded to Azure Key Vault or Container App persistent storage.
+#### Add Storage to Container Apps Environment
+```bash
+# Get storage account key
+STORAGE_KEY=$(az storage account keys list --account-name telegramint6a7207 --resource-group AlgoTrading --query "[0].value" --output tsv)
+
+# Add storage to Container Apps environment
+az containerapp env storage set \
+  --name telegram-trading-env \
+  --resource-group AlgoTrading \
+  --storage-name telegram-sessions-storage \
+  --access-mode ReadWrite \
+  --azure-file-account-name telegramint6a7207 \
+  --azure-file-account-key "$STORAGE_KEY" \
+  --azure-file-share-name telegram-sessions
+```
+
+### 3.2 Generate Session File Locally
+```bash
+# Method 1: Run the bot locally to generate session
+cd src/
+python telegram_bot.py
+# This will prompt for phone number and verification code
+# Session file created: session_name.session
+
+# Method 2: Run groupmessage.py (if telegram_bot.py fails)
+python groupmessage.py
+# Session file created: session_name.session
+```
+
+### 3.3 Upload Session File to Azure File Share
+
+#### Option A: Using Azure CLI
+```bash
+# Upload session file to Azure File Share
+az storage file upload \
+  --share-name telegram-sessions \
+  --source src/session_name.session \
+  --path telegram_trading_session.session \
+  --account-name telegramint6a7207
+```
+
+#### Option B: Using Azure Portal
+1. Navigate to Storage Account `telegramint6a7207`
+2. Go to File shares → `telegram-sessions`
+3. Upload `session_name.session` as `telegram_trading_session.session`
+
+#### Option C: Using Azure Storage Explorer
+1. Download and install Azure Storage Explorer
+2. Connect to your Azure account
+3. Navigate to `telegramint6a7207` → File Shares → `telegram-sessions`
+4. Upload the session file
+
+### 3.4 Update Session File When Needed
+
+If you need to update the session file (e.g., after rate limiting or session expiry):
+
+#### Step 1: Generate New Session Locally
+```bash
+# Remove old session file
+rm src/session_name.session
+
+# Generate new session
+cd src/
+python telegram_bot.py
+# Enter phone number and verification code when prompted
+```
+
+#### Step 2: Replace Session in Azure File Share
+```bash
+# Delete old session from Azure
+az storage file delete \
+  --share-name telegram-sessions \
+  --path telegram_trading_session.session \
+  --account-name telegramint6a7207
+
+# Upload new session
+az storage file upload \
+  --share-name telegram-sessions \
+  --source src/session_name.session \
+  --path telegram_trading_session.session \
+  --account-name telegramint6a7207
+```
+
+#### Step 3: Restart Container App
+```bash
+# Force restart to use new session
+az containerapp revision restart \
+  --name telegram-trading-bot \
+  --resource-group AlgoTrading \
+  --revision $(az containerapp revision list --name telegram-trading-bot --resource-group AlgoTrading --query "[0].name" -o tsv)
+```
+
+### 3.5 Troubleshooting Session Issues
+
+#### Check if session file exists in Azure
+```bash
+az storage file list \
+  --share-name telegram-sessions \
+  --account-name telegramint6a7207 \
+  --output table
+```
+
+#### Download session from Azure for inspection
+```bash
+az storage file download \
+  --share-name telegram-sessions \
+  --path telegram_trading_session.session \
+  --dest ./downloaded_session.session \
+  --account-name telegramint6a7207
+```
+
+#### Common Issues and Solutions
+
+1. **"Database is locked" error**
+   - The bot automatically copies session from read-only mount to writable location
+   - If issue persists, check container logs
+
+2. **"A wait of X seconds is required" (Rate Limiting)**
+   - Wait for the specified time (usually 24 hours)
+   - OR generate session from a different IP/device
+   - OR use an existing valid session file
+
+3. **Session expired or invalid**
+   - Generate a new session file locally
+   - Replace the old session in Azure File Share
+   - Restart the container app
+
+### 3.6 Volume Mount Configuration
+
+The Container App is configured with Azure File Share volume mount:
+
+```json
+{
+  "volumes": [
+    {
+      "name": "telegram-sessions",
+      "storageType": "AzureFile",
+      "storageName": "telegram-sessions-storage"
+    }
+  ],
+  "volumeMounts": [
+    {
+      "mountPath": "/app/sessions",
+      "volumeName": "telegram-sessions"
+    }
+  ]
+}
+```
+
+The bot automatically:
+1. Checks for session at `/app/sessions/telegram_trading_session.session`
+2. Copies it to writable location `/app/telegram_trading_session.session`
+3. Uses the local copy for Telegram authentication
 
 ## Step 4: Deployment
 
@@ -97,24 +253,51 @@ git commit -m "Deploy trading bot"
 git push origin main
 ```
 
-### 4.2 Manual Deployment
+### 4.2 Manual Deployment via GitHub Actions
 Trigger deployment manually via GitHub Actions:
 1. Go to **Actions** tab in GitHub
 2. Select **Deploy Telegram Trading Bot to Azure**
 3. Click **Run workflow**
 4. Select **deploy** action
 
+### 4.3 Manual Docker Deployment
+Deploy directly using Docker commands when GitHub Actions is unavailable:
+
+```bash
+# Build Docker image
+docker build -t arunabhp/telegram-trading-bot:latest .
+
+# Tag with timestamp
+docker tag arunabhp/telegram-trading-bot:latest arunabhp/telegram-trading-bot:manual-$(date +%Y%m%d-%H%M%S)
+
+# Push to Docker Hub
+docker push arunabhp/telegram-trading-bot:latest
+docker push arunabhp/telegram-trading-bot:manual-$(date +%Y%m%d-%H%M%S)
+
+# Update Azure Container App
+az containerapp update \
+  --name telegram-trading-bot \
+  --resource-group AlgoTrading \
+  --image arunabhp/telegram-trading-bot:manual-$(date +%Y%m%d-%H%M%S)
+```
+
 ## Step 5: Monitoring and Management
 
 ### 5.1 View Logs
 ```bash
-# Container App logs
+# Container App logs (real-time)
 az containerapp logs show \
   --name telegram-trading-bot \
-  --resource-group telegram-trading-rg \
+  --resource-group AlgoTrading \
   --follow
 
-# Log Analytics query
+# Container App logs (last N lines)
+az containerapp logs show \
+  --name telegram-trading-bot \
+  --resource-group AlgoTrading \
+  --tail 50
+
+# Log Analytics query (if configured)
 az monitor log-analytics query \
   --workspace telegram-trading-bot-logs \
   --analytics-query "ContainerAppConsoleLogs_CL | where ContainerName_s == 'telegram-trading-bot' | order by TimeGenerated desc"
@@ -125,14 +308,20 @@ az monitor log-analytics query \
 # Start bot manually
 az containerapp update \
   --name telegram-trading-bot \
-  --resource-group telegram-trading-rg \
+  --resource-group AlgoTrading \
   --min-replicas 1
 
 # Stop bot manually  
 az containerapp update \
   --name telegram-trading-bot \
-  --resource-group telegram-trading-rg \
+  --resource-group AlgoTrading \
   --min-replicas 0
+
+# Restart current revision
+az containerapp revision restart \
+  --name telegram-trading-bot \
+  --resource-group AlgoTrading \
+  --revision $(az containerapp revision list --name telegram-trading-bot --resource-group AlgoTrading --query "[0].name" -o tsv)
 ```
 
 ### 5.3 GitHub Actions Manual Control
@@ -177,13 +366,16 @@ Use the workflow dispatch with `stop` action to manually stop the bot.
 ### Debug Commands:
 ```bash
 # Check container status
-az containerapp show --name telegram-trading-bot --resource-group telegram-trading-rg
+az containerapp show --name telegram-trading-bot --resource-group AlgoTrading
 
 # View recent deployments
-az containerapp revision list --name telegram-trading-bot --resource-group telegram-trading-rg
+az containerapp revision list --name telegram-trading-bot --resource-group AlgoTrading
 
 # Check scaling rules
-az containerapp show --name telegram-trading-bot --resource-group telegram-trading-rg --query "properties.template.scale"
+az containerapp show --name telegram-trading-bot --resource-group AlgoTrading --query "properties.template.scale"
+
+# Check current revision status
+az containerapp revision list --name telegram-trading-bot --resource-group AlgoTrading --query "[0].{name:name,replicas:properties.replicas,status:properties.runningStatus}" --output table
 ```
 
 ## Maintenance
