@@ -70,7 +70,7 @@ jobs:
           TELEGRAM_API_ID=secretref:telegram-api-id
           TELEGRAM_API_HASH=secretref:telegram-api-hash
           TELEGRAM_PHONE_NUMBER=secretref:telegram-phone-number
-          TELEGRAM_SESSION_NAME=telegram_trading_session
+          TELEGRAM_SESSION_NAME=session_name
     
     - name: Set up auto-shutdown
       run: |
