@@ -35,10 +35,10 @@ Telegram Channels → Telethon Client → Enhanced Parser → Confidence Filter 
 pip install -r src/requirements.txt
 
 # Run the main monitoring script
-python src/groupmessage.py
+py src/groupmessage.py
 
 # Test the message parser independently
-python src/message_parser.py
+py src/message_parser.py
 
 # Linting
 flake8 src/
