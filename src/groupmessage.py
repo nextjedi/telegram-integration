@@ -9,8 +9,9 @@ import requests
 from telethon import TelegramClient, events
 from telethon.tl.types import PeerChannel
 
-# Import our enhanced message parser
+# Import our enhanced message parser and constants
 from message_parser import enhanced_message_processor
+from constants import BTST_CHANNEL_ID, DAYTRADE_CHANNEL_ID, UNIVEST_CHANNEL_ID, TRADING_API_ENDPOINT
 
 # Create test data directories if they don't exist
 Path("src/test_data/raw_messages").mkdir(parents=True, exist_ok=True)
@@ -23,13 +24,13 @@ ssl._create_default_https_context = ssl._create_unverified_context
 api_id = os.getenv("TELEGRAM_API_ID")
 api_hash = os.getenv("TELEGRAM_API_HASH")
 phone_number = os.getenv("TELEGRAM_PHONE_NUMBER")
-api_endpoint = os.getenv("TRADING_API_ENDPOINT", "https://tip-based-trading.azurewebsites.net/")
 session_name = os.getenv("TELEGRAM_SESSION_NAME", "telegram_trading_session")
 
-# Channel IDs from environment or defaults
-btst_channel = int(os.getenv("BTST_CHANNEL_ID", "-1001552501322"))
-daytrade_channel = int(os.getenv("DAYTRADE_CHANNEL_ID", "-1001752927494"))
-univest_channel = int(os.getenv("UNIVEST_CHANNEL_ID", "-1001983880498"))
+# Use constants for channel IDs and API endpoint
+btst_channel = BTST_CHANNEL_ID
+daytrade_channel = DAYTRADE_CHANNEL_ID
+univest_channel = UNIVEST_CHANNEL_ID
+api_endpoint = TRADING_API_ENDPOINT
 
 # Validate required environment variables
 if not api_id or not api_hash or not phone_number:

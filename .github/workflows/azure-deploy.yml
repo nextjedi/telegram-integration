@@ -70,11 +70,7 @@ jobs:
           TELEGRAM_API_ID=secretref:telegram-api-id
           TELEGRAM_API_HASH=secretref:telegram-api-hash
           TELEGRAM_PHONE_NUMBER=secretref:telegram-phone-number
-          TRADING_API_ENDPOINT=${{ secrets.TRADING_API_ENDPOINT }}
           TELEGRAM_SESSION_NAME=telegram_trading_session
-          BTST_CHANNEL_ID=${{ secrets.BTST_CHANNEL_ID }}
-          DAYTRADE_CHANNEL_ID=${{ secrets.DAYTRADE_CHANNEL_ID }}
-          UNIVEST_CHANNEL_ID=${{ secrets.UNIVEST_CHANNEL_ID }}
     
     - name: Set up auto-shutdown
       run: |
