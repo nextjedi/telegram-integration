@@ -40,6 +40,33 @@ if not api_id or not api_hash or not phone_number:
 session_path = f"/app/sessions/{session_name}"
 print(f"Using session file: {session_path}")
 
+# Check if session file exists and handle database lock
+import os
+import sqlite3
+import time
+
+if os.path.exists(f"{session_path}.session"):
+    print(f"Found existing session file: {session_path}.session")
+    try:
+        # Try to open and close the database to check if it's accessible
+        conn = sqlite3.connect(f"{session_path}.session", timeout=10.0)
+        conn.execute("PRAGMA journal_mode=WAL")  # Use WAL mode to reduce locking
+        conn.close()
+        print("Session database is accessible")
+    except sqlite3.OperationalError as e:
+        print(f"Database lock detected, waiting and retrying: {e}")
+        time.sleep(2)
+        try:
+            conn = sqlite3.connect(f"{session_path}.session", timeout=10.0)
+            conn.execute("PRAGMA journal_mode=DELETE")  # Reset journal mode
+            conn.execute("PRAGMA locking_mode=NORMAL")
+            conn.close()
+            print("Database lock cleared")
+        except Exception as lock_error:
+            print(f"Could not clear database lock: {lock_error}")
+else:
+    print(f"Session file not found at: {session_path}.session")
+
 client = TelegramClient(session_path, api_id, api_hash)
 
 # client.start() will be called inside async context
