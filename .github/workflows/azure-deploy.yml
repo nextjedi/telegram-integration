@@ -27,6 +27,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     if: github.event.inputs.action != 'stop'
+    environment: prod
     
     steps:
     - name: Checkout code
@@ -88,6 +89,7 @@ jobs:
   stop-bot:
     runs-on: ubuntu-latest
     if: github.event.inputs.action == 'stop'
+    environment: prod
     
     steps:
     - name: Log in to Azure
@@ -107,6 +109,7 @@ jobs:
   weekend-shutdown:
     runs-on: ubuntu-latest
     if: github.event.schedule == '0 11 * * 6' # Saturdays at 11 AM UTC
+    environment: prod
     
     steps:
     - name: Log in to Azure
