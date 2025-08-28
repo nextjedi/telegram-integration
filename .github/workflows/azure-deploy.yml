@@ -6,6 +6,8 @@ on:
   schedule:
     # Start bot on weekdays at 7:30 AM IST (2:00 AM UTC)
     - cron: '0 2 * * 1-5'
+    # Stop bot on weekdays at 4:30 PM IST (11:00 AM UTC)
+    - cron: '0 11 * * 1-5'
   workflow_dispatch:
     inputs:
       action:
@@ -26,7 +28,7 @@ env:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    if: github.event.inputs.action != 'stop'
+    if: github.event.inputs.action != 'stop' && github.event.schedule != '0 11 * * 1-5'
     environment: prod
     
     steps:
@@ -80,15 +82,14 @@ jobs:
         az containerapp update \
           --name ${{ env.AZURE_CONTAINER_APP_NAME }} \
           --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
-          --scale-rule-name "trading-hours" \
-          --scale-rule-type "cron" \
-          --scale-rule-metadata "cronExpression=0 11 * * 1-5" \
           --min-replicas 0 \
           --max-replicas 1
+        
+        echo "✅ Auto-scaling configured (advanced cron rules skipped for now)"
 
   stop-bot:
     runs-on: ubuntu-latest
-    if: github.event.inputs.action == 'stop'
+    if: github.event.inputs.action == 'stop' || github.event.schedule == '0 11 * * 1-5'
     environment: prod
     
     steps:
