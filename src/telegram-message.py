@@ -9,7 +9,7 @@ config.read('config.ini')
 
 api_id = 23626680
 api_hash = "1439cfbf90f01a34ac35a507bdf3052d"
-phone_number = +918867375708
+phone_number = "+918867375708"
 
 # Read the API endpoint URL from config.ini file
 api_url = "https://tip-trading.calmbay-8cb6b31c.eastus.azurecontainerapps.io/"
@@ -75,8 +75,8 @@ async def handle_new_message(m):
             "instrumentType":instrumentType
         },"price": trigger}
         print (data)
-        requests.post(url=ipport+"/tip",json=data)
-        requests.post(url=ip+"tip",json=data)
+        # Use the defined api_url instead of undefined variables
+        requests.post(url=api_url+"tip",json=data)
         # utsav= await client.get_entity("@Urstrulyutsav29")
         # amit= await client.get_entity("@amitt0005")
         # robin= await client.get_entity("+917022557231")
