@@ -24,7 +24,7 @@ ssl._create_default_https_context = ssl._create_unverified_context
 api_id = os.getenv("TELEGRAM_API_ID")
 api_hash = os.getenv("TELEGRAM_API_HASH")
 phone_number = os.getenv("TELEGRAM_PHONE_NUMBER")
-session_name = os.getenv("TELEGRAM_SESSION_NAME", "telegram_trading_session")
+session_name = os.getenv("TELEGRAM_SESSION_NAME", "session_name")
 
 # Use constants for channel IDs and API endpoint
 btst_channel = BTST_CHANNEL_ID
@@ -36,7 +36,11 @@ api_endpoint = TRADING_API_ENDPOINT
 if not api_id or not api_hash or not phone_number:
     raise ValueError("Missing required environment variables: TELEGRAM_API_ID, TELEGRAM_API_HASH, TELEGRAM_PHONE_NUMBER")
 
-client = TelegramClient(session_name, api_id, api_hash)
+# Use session file from mounted Azure File Share
+session_path = f"/app/sessions/{session_name}"
+print(f"Using session file: {session_path}")
+
+client = TelegramClient(session_path, api_id, api_hash)
 
 # client.start() will be called inside async context
 
