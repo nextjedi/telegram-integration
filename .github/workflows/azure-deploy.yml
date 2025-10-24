@@ -1,23 +1,24 @@
 name: Deploy Telegram Trading Bot to Azure
 
-on:
-  push:
-    branches: [ main ]
-  schedule:
-    # Start bot on weekdays at 7:30 AM IST (2:00 AM UTC)
-    - cron: '0 2 * * 1-5'
-    # Stop bot on weekdays at 4:30 PM IST (11:00 AM UTC)
-    - cron: '0 11 * * 1-5'
-  workflow_dispatch:
-    inputs:
-      action:
-        description: 'Action to perform'
-        required: true
-        default: 'deploy'
-        type: choice
-        options:
-        - deploy
-        - stop
+# Workflow temporarily disabled
+# on:
+#   push:
+#     branches: [ main ]
+#   schedule:
+#     # Start bot on weekdays at 7:30 AM IST (2:00 AM UTC)
+#     - cron: '0 2 * * 1-5'
+#     # Stop bot on weekdays at 4:30 PM IST (11:00 AM UTC)
+#     - cron: '0 11 * * 1-5'
+#   workflow_dispatch:
+#     inputs:
+#       action:
+#         description: 'Action to perform'
+#         required: true
+#         default: 'deploy'
+#         type: choice
+#         options:
+#         - deploy
+#         - stop
 
 env:
   AZURE_CONTAINER_APP_NAME: telegram-trading-bot
